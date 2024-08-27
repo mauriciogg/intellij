@@ -86,6 +86,20 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.intellij.execution.configurations.JavaCommandLineState;
+import com.intellij.execution.configurations.JavaParameters;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.util.JavaParametersUtil;
+import com.intellij.execution.util.ProgramParametersUtil;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.JavaSdkType;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkTypeId;
+import com.intellij.execution.JavaRunConfigurationExtensionManager;
+import com.intellij.execution.configurations.ParametersList;
+import com.intellij.openapi.application.ReadAction;
+
 /**
  * Generic runner for {@link BlazeCommandRunConfiguration}s, used as a fallback in the case where no
  * other runners are more relevant.
@@ -105,7 +119,7 @@ public final class BlazeCommandGenericRunConfigurationRunner
   }
 
   /** {@link RunProfileState} for generic blaze commands. */
-  public static class BlazeCommandRunProfileState extends CommandLineState {
+  public static class BlazeCommandRunProfileState extends JavaCommandLineState {
     private static final int BLAZE_BUILD_INTERRUPTED = 8;
     private final BlazeCommandRunConfiguration configuration;
     private final BlazeCommandRunConfigurationCommonState handlerState;
@@ -130,6 +144,33 @@ public final class BlazeCommandGenericRunConfigurationRunner
       return BlazeCommandRunConfigurationRunner.getConfiguration(environment);
     }
 
+    private Project getProject() {
+       return configuration.getProject();
+    }
+
+    @Override
+    protected GeneralCommandLine createCommandLine() throws ExecutionException {
+        //BlazeCommand.Builder blazeCommand = getBlazeCommand(
+        //    getProject(),
+        //    ExecutorType.fromExecutor(getEnvironment().getExecutor()),
+        //    Blaze.getBuildSystemProvider(getProject()).getBuildSystem().getBuildInvoker(getProject(), BlazeContext.create()),
+        //    ImmutableList.of(),
+        //    BlazeContext.create()
+        //);
+
+        //GeneralCommandLine commandLine = new GeneralCommandLine(blazeCommand.toList());
+        //
+        return new GeneralCommandLine();
+        // EnvironmentVariablesData envVarState = handlerState.getUserEnvVarsState().getData();
+        // commandLine.withEnvironment(envVarState.getEnvs());
+        // commandLine.withParentEnvironmentType(
+        //    envVarState.isPassParentEnvs()
+        //        ? GeneralCommandLine.ParentEnvironmentType.CONSOLE
+        //        : GeneralCommandLine.ParentEnvironmentType.NONE);
+
+        // return commandLine;
+    }
+
     @Override
     public ExecutionResult execute(Executor executor, ProgramRunner<?> runner)
         throws ExecutionException {
@@ -137,6 +178,7 @@ public final class BlazeCommandGenericRunConfigurationRunner
       return SmRunnerUtils.attachRerunFailedTestsAction(result);
     }
 
+    /*
     @Override
     protected ProcessHandler startProcess() throws ExecutionException {
       Project project = configuration.getProject();
@@ -165,7 +207,7 @@ public final class BlazeCommandGenericRunConfigurationRunner
                 project, invoker, buildResultHelper, blazeCommand, workspaceRoot, context);
       }
     }
-
+   */
     private ProcessHandler getGenericProcessHandler() {
       return new ProcessHandler() {
         @Override
@@ -422,6 +464,61 @@ public final class BlazeCommandGenericRunConfigurationRunner
             }
           });
       return processHandler;
+    }
+
+    private void setupJavaParameters(JavaParameters params) throws ExecutionException {
+      ReadAction.run(() -> JavaRunConfigurationExtensionManager.getInstance()
+        .updateJavaParameters(getConfiguration(getEnvironment()), params, getRunnerSettings(), getEnvironment().getExecutor()));
+    }
+
+    @Override
+    protected JavaParameters createJavaParameters() throws ExecutionException {
+        JavaParameters javaParams = new JavaParameters();
+        Project project = configuration.getProject();
+        
+        // Set the JDK
+        Sdk sdk = JavaParametersUtil.createProjectJdk(project, null);
+        if (sdk == null) {
+            throw new ExecutionException("No JDK specified");
+        }
+        SdkTypeId sdkType = sdk.getSdkType();
+        if (!(sdkType instanceof JavaSdkType)) {
+            throw new ExecutionException("Only Java SDK is supported");
+        }
+        javaParams.setJdk(sdk);
+        
+        // Setup classpath and modules if needed
+        Module module = ProgramParametersUtil.getModule(configuration);
+        if (module != null) {
+            javaParams.configureByModule(module, JavaParameters.JDK_AND_CLASSES_AND_TESTS);
+        } else {
+            javaParams.configureByProject(project, JavaParameters.JDK_AND_CLASSES_AND_TESTS, sdk);
+        }
+        
+        // Set the main class or jar to execute
+        // javaParams.setMainClass(configuration.getMainClassName());
+        
+        // Add program parameters
+        ParametersList programParams = javaParams.getProgramParametersList();
+        programParams.addParametersString(configuration.getProgramParameters());
+        
+        // Add VM parameters
+        ParametersList vmParams = javaParams.getVMParametersList();
+        vmParams.addParametersString(configuration.getVMParameters());
+        
+        // Set working directory
+        String workingDir = configuration.getWorkingDirectory();
+        if (workingDir != null) {
+            javaParams.setWorkingDirectory(workingDir);
+        }
+        
+        // Set environment variables
+        javaParams.setEnv(configuration.getEnvs());
+        javaParams.setPassParentEnvs(configuration.isPassParentEnvs());
+
+	setupJavaParameters(javaParams);
+
+        return javaParams;
     }
 
     private BlazeCommand.Builder getBlazeCommand(

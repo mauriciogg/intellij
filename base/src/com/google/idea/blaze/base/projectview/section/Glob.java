@@ -30,19 +30,28 @@ public final class Glob implements ProtoWrapper<String>, Serializable {
   private static final long serialVersionUID = 1L;
 
   private String pattern;
+  private boolean isNegative;
   private transient FileNameMatcher matcher;
 
   public Glob(String pattern) {
-    this.pattern = pattern;
+    if (pattern.startsWith("-")) {
+      this.pattern = pattern.substring(1);
+      this.isNegative = true;
+    } else {
+      this.pattern = pattern;
+      this.isNegative = false;
+    }
   }
 
   /** A set of globs */
   public static final class GlobSet {
 
     private final ImmutableList<Glob> globs;
+    private final ImmutableList<Glob> negativeGlobs;
 
     public GlobSet(Collection<Glob> globs) {
-      this.globs = ImmutableList.copyOf(globs);
+      this.globs = globs.stream().filter(g -> !g.isNegative).collect(ImmutableList.toImmutableList());
+      this.negativeGlobs = globs.stream().filter(g -> g.isNegative).collect(ImmutableList.toImmutableList());
     }
 
     public boolean isEmpty() {
@@ -50,6 +59,11 @@ public final class Glob implements ProtoWrapper<String>, Serializable {
     }
 
     public boolean matches(String string) {
+      for (Glob glob : negativeGlobs) {
+        if (glob.matches(string)) {
+          return false;
+        }
+      }
       for (Glob glob : globs) {
         if (glob.matches(string)) {
           return true;

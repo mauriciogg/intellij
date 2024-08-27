@@ -19,6 +19,7 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -45,6 +46,7 @@ import com.google.idea.blaze.base.settings.BlazeImportSettings.ProjectType;
 import com.google.idea.blaze.base.sync.data.BlazeProjectDataManager;
 import com.google.idea.blaze.base.ui.UiUtil;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.CommonJavaRunConfigurationParameters;
 import com.intellij.execution.Executor;
 import com.intellij.execution.RunManagerEx;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -67,15 +69,22 @@ import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.UIUtil;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import org.jdom.Element;
 
+import com.intellij.execution.target.TargetEnvironmentAwareRunProfile;
+import com.intellij.execution.target.LanguageRuntimeType;
+import com.intellij.execution.target.TargetEnvironmentConfiguration;
+
 /** A run configuration which executes Blaze commands. */
 public class BlazeCommandRunConfiguration
     extends LocatableConfigurationBase<LocatableRunConfigurationOptions>
     implements BlazeRunConfiguration,
+        TargetEnvironmentAwareRunProfile,
+        CommonJavaRunConfigurationParameters,
         ModuleRunProfile,
         RunConfigurationWithSuppressedDefaultDebugAction {
 
@@ -116,6 +125,16 @@ public class BlazeCommandRunConfiguration
   private static final String KEEP_IN_SYNC_TAG = "keep-in-sync";
   private static final String CONTEXT_ELEMENT_ATTR = "context-element";
 
+
+  private String programParameters;
+  private String vmParameters;
+  private String alternativeJrePath;
+  private boolean alternativeJrePathEnabled;
+  private String workingDirectory;
+  private boolean passParentEnvs;
+  private Map<String, String> envs;
+ 
+
   /** The blaze-specific parts of the last serialized state of the configuration. */
   private Element blazeElementState = new Element(BLAZE_SETTINGS_TAG);
 
@@ -124,6 +143,23 @@ public class BlazeCommandRunConfiguration
    * context action anyway.
    */
   @Nullable private volatile PendingRunConfigurationContext pendingContext;
+
+  @Nullable
+  public String getDefaultTargetName() {
+    return null;
+  }
+
+  public void setDefaultTargetName(@Nullable String targetName) {
+  } 
+
+  public boolean canRunOn(TargetEnvironmentConfiguration target) {
+    return true;
+  }
+
+  @Nullable
+  public LanguageRuntimeType<?> getDefaultLanguageRuntimeType() {
+    return null;
+  }
 
   /** Set up a run configuration with a not-yet-known target pattern. */
   public void setPendingContext(PendingRunConfigurationContext pendingContext) {
@@ -154,6 +190,95 @@ public class BlazeCommandRunConfiguration
     // setup failed, but it still has useful information (perhaps the user modified it?)
     this.pendingContext = null;
     return false;
+  }
+
+  @Override
+  public void setVMParameters(@Nullable String value) {
+    System.out.println("MGG-DBG- ********** setVMParameters ******* " + value);
+    vmParameters = value;
+    // pass
+  }
+
+  @Override
+  public String getVMParameters() {
+    return "-XX:+PrintGCDetails";
+    ///return vmParameters;
+  }
+
+  @Override
+  public boolean isAlternativeJrePathEnabled() {
+    return false;
+  }
+
+  @Override
+  public void setAlternativeJrePathEnabled(boolean enabled) {
+    alternativeJrePathEnabled = enabled;
+  }
+
+  @Override
+  @Nullable
+  public String getAlternativeJrePath() {
+    return alternativeJrePath;
+  }
+
+  public void setAlternativeJrePath(@Nullable String path) {
+    alternativeJrePath = path;
+    // pass
+  }
+
+  @Override 
+  public String getPackage() {
+	return null;
+  }
+
+  @Override 
+  public String getRunClass() {
+	return null;
+  }
+
+  @Override
+  public void setProgramParameters(@Nullable String value) {
+    programParameters = value;
+  }
+
+  @Override
+  public String getProgramParameters() {
+    return programParameters;
+  }
+
+  @Override
+  public void setWorkingDirectory(@Nullable String value) {
+    System.out.println("MGG-DBG- ********** setWorkingDirectory *******");
+    workingDirectory = value;
+  }
+
+  @Nullable
+  @Override
+  public String getWorkingDirectory() {
+    System.out.println("MGG-DBG- ********** getWorkingDirectory *******");
+    return workingDirectory;
+  }
+
+  @Override
+  public void setEnvs( Map<String, String> envs) {
+    System.out.println("MGG-DBG- ********** setEng *******");
+    this.envs = ImmutableMap.copyOf(envs);
+  }
+
+  
+  @Override
+  public Map<String, String> getEnvs() {
+    return envs;
+  }
+
+  @Override
+  public void setPassParentEnvs(boolean passParentEnvs) {
+    this.passParentEnvs = passParentEnvs;
+  }
+
+  @Override
+  public boolean isPassParentEnvs() {
+    return passParentEnvs;
   }
 
   @Nullable
