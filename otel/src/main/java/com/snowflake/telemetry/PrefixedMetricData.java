@@ -1,10 +1,10 @@
 package com.snowflake.telemetry;
 
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.data.MetricDataType;
-import io.opentelemetry.sdk.metrics.data.Data;
 import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 
 /**
  * A wrapper class that implements the MetricData interface prefixing the name of the underlying data

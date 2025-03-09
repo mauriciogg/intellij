@@ -1,12 +1,12 @@
 package com.snowflake.telemetry;
 
 import com.intellij.openapi.diagnostic.Logger;
-import io.opentelemetry.sdk.metrics.export.MetricExporter;
-import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import com.intellij.platform.diagnostic.telemetry.impl.OpenTelemetryExporterProvider;
-import java.util.concurrent.TimeUnit;
-import java.util.List;
+import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
+import io.opentelemetry.sdk.metrics.export.MetricExporter;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class SnowflakeOtelExporterProvider implements OpenTelemetryExporterProvider {
     private static final Logger LOG = Logger.getInstance(SnowflakeOtelExporterProvider.class);
