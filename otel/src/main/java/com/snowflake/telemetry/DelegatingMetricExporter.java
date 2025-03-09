@@ -21,6 +21,7 @@ import java.util.Objects;
 public class DelegatingMetricExporter implements MetricExporter {
     private static final Logger LOG = Logger.getInstance(DelegatingMetricExporter.class);
     private final OtlpGrpcMetricExporter delegate;
+    private final String metricPrefix;
 
     /**
      * Creates a new DelegatingMetricExporter.
@@ -28,8 +29,10 @@ public class DelegatingMetricExporter implements MetricExporter {
      * @param delegate the underlying OtlpGrpcMetricExporter that will handle the actual export
      * @throws NullPointerException if delegate is null
      */
-    public DelegatingMetricExporter(OtlpGrpcMetricExporter delegate) {
+    public DelegatingMetricExporter(OtlpGrpcMetricExporter delegate, String prefix) {
         this.delegate = delegate;
+        this.metricPrefix = prefix;
+
     }
 
 
@@ -51,7 +54,7 @@ public class DelegatingMetricExporter implements MetricExporter {
     @Override
     public CompletableResultCode export(Collection<MetricData> metrics) {
         Collection<MetricData> prefixedMetrics = metrics.stream()
-            .map(m ->  PrefixedMetricData.create(m, "sf_ide"))
+            .map(m ->  PrefixedMetricData.create(m, metricPrefix))
             .toList();
         return delegate.export(prefixedMetrics);
     }
