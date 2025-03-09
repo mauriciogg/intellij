@@ -583,20 +583,6 @@ http_file(
 )
 
 http_file(
-  name = "opentelemetry-exporter-sender-jdk-1_47_0_http",
-  url = "https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-exporter-sender-jdk/1.47.0/opentelemetry-exporter-sender-jdk-1.47.0.jar",
-  sha256 = "17c8e65e017e506ba520811009a37a64eceb2ceb0d15cd1d0e0cb074e54821cc",
-  downloaded_file_path = "opentelemetry-exporter-sender-jdk-1.47.0.jar"
-)
-
-http_file(
-  name = "opentelemetry-exporter-sender-okhttp-1_47_0_http",
-  url = "https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-exporter-sender-okhttp/1.47.0/opentelemetry-exporter-sender-okhttp-1.47.0.jar",
-  sha256 = "d293e4d41fb5dfb322c56a8ff7080cb88f5b09b6c2ab9b7b0b717e2e3da3237c",
-  downloaded_file_path = "opentelemetry-exporter-sender-okhttp-1.47.0.jar"
-)
-
-http_file(
   name = "opentelemetry-exporter-sender-grpc-managed-channel-1_47_0_http",
   url = "https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-exporter-sender-grpc-managed-channel/1.47.0/opentelemetry-exporter-sender-grpc-managed-channel-1.47.0.jar",
   sha256 = "409e293d4252f958d0ea0f16890aa0806359b0250cee39e602f80dc2684b5277",

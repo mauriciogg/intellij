@@ -8,7 +8,6 @@
 
     <description><![CDATA[
         Bridges IntelliJ's internal metrics to an OpenTelemetry collector.
-        - Forwards metrics to OTLP HTTP collector on port 4318
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
