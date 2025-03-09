@@ -32,19 +32,6 @@ stamped_plugin_xml(
 )
 
 java_library(
-    name = "opentelemetry-exporter-otlp-common",
-    visibility = ["//visibility:public"],
-    exports = [
-        ":opentelemetry-exporter-otlp-common-1_47_0_http_import",
-        ":opentelemetry-exporter-common-1_47_0_http_import",
-        ":opentelemetry-exporter-otlp-1_47_0_http_import",
-        ":opentelemetry-sdk-1_47_0_http_import",
-        ":opentelemetry-sdk-extension-autoconfigure-spi-1_47_0_http_import",
-        ":opentelemetry-exporter-sender-grpc-managed-channel-1_47_0_http_import",
-    ],
-)
-
-java_library(
     name = "otel_lib",
     srcs = glob(["src/**/*.java"]),
     deps = [
