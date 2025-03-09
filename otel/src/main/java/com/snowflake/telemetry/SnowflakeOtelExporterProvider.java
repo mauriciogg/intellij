@@ -8,7 +8,6 @@ import com.intellij.platform.diagnostic.telemetry.impl.OpenTelemetryExporterProv
 import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.Collections;
-import io.opentelemetry.sdk.metrics.internal.data.DelegatingMetricExporter;
 
 public class SnowflakeOtelExporterProvider implements OpenTelemetryExporterProvider {
     private static final Logger LOG = Logger.getInstance(SnowflakeOtelExporterProvider.class);

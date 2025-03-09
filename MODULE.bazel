@@ -3,8 +3,6 @@ module(
     repo_name = "intellij_with_bazel",
 )
 
-http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
-
 register_toolchains("//third_party/kotlin:toolchain")
 
 bazel_dep(
@@ -121,11 +119,12 @@ maven.install(
         "com.google.j2objc:j2objc-annotations:2.8",
         "com.google.guava:failureaccess:1.0.2",
         "org.hamcrest:hamcrest-core:3.0",
+
+	# For OTEL plugin
         "io.grpc:grpc-stub:1.70.0",
         "io.grpc:grpc-api:1.70.0",
         "io.grpc:grpc-core:1.70.0",
         "io.grpc:grpc-netty:1.70.0",
-	"io.opentelemetry:opentelemetry-sdk-metrics:1.47.0",
 
     ],
     fail_if_repin_required = True,
@@ -552,6 +551,9 @@ new_git_repository(
     shallow_since = "1518210648 -0800",
 )
 
+# Dependencies needed for OTEL plugin
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+
 http_file(
   name = "opentelemetry-exporter-otlp-common-1_47_0_http",
   url = "https://cache-redirector.jetbrains.com/repo1.maven.org/maven2/io/opentelemetry/opentelemetry-exporter-otlp-common/1.47.0/opentelemetry-exporter-otlp-common-1.47.0.jar",
@@ -591,7 +593,6 @@ http_file(
   name = "opentelemetry-exporter-sender-okhttp-1_47_0_http",
   url = "https://repo1.maven.org/maven2/io/opentelemetry/opentelemetry-exporter-sender-okhttp/1.47.0/opentelemetry-exporter-sender-okhttp-1.47.0.jar",
   sha256 = "d293e4d41fb5dfb322c56a8ff7080cb88f5b09b6c2ab9b7b0b717e2e3da3237c",
-  #sha256 = "409e293d4252f958d0ea0f16890aa0806359b0250cee39e602f80dc2684b5277",
   downloaded_file_path = "opentelemetry-exporter-sender-okhttp-1.47.0.jar"
 )
 

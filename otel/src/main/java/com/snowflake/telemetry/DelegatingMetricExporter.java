@@ -1,4 +1,4 @@
-package io.opentelemetry.sdk.metrics.internal.data;
+package com.snowflake.telemetry;
 
 import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.metrics.data.MetricData;
@@ -9,6 +9,7 @@ import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.data.AggregationTemporality;
 import io.opentelemetry.sdk.metrics.InstrumentType;
 import com.intellij.openapi.diagnostic.Logger;
+import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -50,9 +51,7 @@ public class DelegatingMetricExporter implements MetricExporter {
     @Override
     public CompletableResultCode export(Collection<MetricData> metrics) {
         Collection<MetricData> prefixedMetrics = metrics.stream()
-            .map(m -> (MetricData)ImmutableMetricData.create(
-                m.getResource(), m.getInstrumentationScopeInfo(), "sf_ide." + m.getName(), m.getDescription(), m.getUnit(), m.getType(), m.getData())
-            )
+            .map(m ->  PrefixedMetricData.create(m, "sf_ide"))
             .toList();
         return delegate.export(prefixedMetrics);
     }
